@@ -1,0 +1,49 @@
+
+import albedo from '@albedo-link/intent';
+
+// TESTNET Horizon
+const HORIZON = "https://horizon-testnet.stellar.org";
+// On testnet, USDC may not exist; left for future assets
+const USDC_ISSUER = "TESTNET_USDC_ISSUER_PLACEHOLDER";
+
+export async function fetchBalances(address){
+  try {
+    const r = await fetch(`${HORIZON}/accounts/${address}`);
+    if (r.status === 404) {
+      // account not funded/active yet
+      return { xlm: "0.0000", usdc: "0.0000" };
+    }
+    if (!r.ok) throw new Error('Failed to fetch balances');
+    const data = await r.json();
+    const list = data?.balances || [];
+    const xlm = list.find(b=>b.asset_type==='native')?.balance || "0.0000";
+    const usdc = list.find(b=>b.asset_code==='USDC' && b.asset_issuer===USDC_ISSUER)?.balance || "0.0000";
+    return { xlm, usdc };
+  } catch (e) {
+    console.error(e);
+    return { xlm: null, usdc: null };
+  }
+}
+
+export const Adapters = {
+  albedo: {
+    name: 'Albedo (Testnet)',
+    installed: () => true, // Albedo uses intents; no extension check
+    connect: async () => {
+      // Request public key from Albedo. User can approve in a popup.
+      const res = await albedo.publicKey({});
+      const pk = res?.publicKey || res?.pubkey || res?.pubKey;
+      if (!pk) throw new Error('Albedo: publicKey not returned (no pubkey in response)');
+      return { address: pk, network: (res?.network?.toUpperCase?.() || 'TESTNET') };
+    },
+    signTx: async (xdr) => {
+      // Optional: sign & submit via Albedo (kept for future flows)
+      const signed = await albedo.tx({
+        xdr,
+        submit: true,
+        network: 'testnet'
+      });
+      return signed;
+    }
+  }
+};

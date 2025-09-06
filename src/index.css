@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+.card { @apply rounded-2xl bg-slate-900/60 border border-white/10 p-4; }
+.btn { @apply text-xs px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/30 transition; }
+.tab { @apply text-sm px-3 py-1.5 rounded-lg border border-white/10; }
+.tab-active { @apply border-white/60; }
+.muted { @apply text-sm text-slate-400; }

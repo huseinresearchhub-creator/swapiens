@@ -1,0 +1,1 @@
+export default function Market(){return <div className='card'>Market (placeholder)</div>}
